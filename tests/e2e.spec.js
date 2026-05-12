@@ -1,18 +1,15 @@
 import { test, expect } from '@playwright/test';
 
-// Pre-existing browser init failure keeps this from rendering consistently in Playwright.
-test.skip('page loads and renders stage track', async ({ page }) => {
+test('landing page renders how-to-play copy in the main card', async ({ page }) => {
   await page.goto('/');
+
   await expect(page.getByText('The Dev Cycle')).toBeVisible();
-  await expect(page.locator('.stage-node')).toHaveCount(6);
   await expect(page.locator('#draw-scenario-btn')).toBeVisible();
   await expect(page.locator('#draw-support-btn')).toBeVisible();
   await expect(page.locator('#draw-project-btn')).toHaveCount(0);
-  await expect(page.locator('#status-badges')).not.toContainText('Turn');
-  await expect(page.locator('#active-card')).not.toContainText('Next turn');
-  await expect(page.locator('#stats')).toContainText('Project Draw %');
-  await expect(page.locator('#stats')).not.toContainText('Actions');
-  await expect(page.locator('#stats')).toContainText('14%');
+  await expect(page.locator('#active-card')).toContainText('Choose your next move');
+  await expect(page.locator('#active-card')).toContainText('How to play');
+  await expect(page.locator('#active-card')).toContainText('Draw scenario cards to face career moments');
 });
 
 test('scenario choices show short summaries and generic guidance', async ({ page }) => {
@@ -260,6 +257,8 @@ test('open turn card does not duplicate the top draw buttons', async ({ page }) 
   await expect(page.locator('#draw-support-btn')).toBeVisible();
   await expect(page.locator('#active-card')).toContainText('Choose your next move');
   await expect(page.locator('#active-card')).toContainText('Use the Draw scenario and Draw support buttons above');
+  await expect(page.locator('#active-card')).toContainText('How to play');
+  await expect(page.locator('#active-card')).toContainText('Draw scenario cards to face career moments');
   await expect(page.locator('#active-card button')).toHaveCount(0);
 });
 

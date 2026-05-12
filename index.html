@@ -516,6 +516,22 @@
         return announcement;
       }
 
+      function renderHowToPlayCallout() {
+        return `
+          <div class="choices">
+            <div class="choice">
+              <strong>How to play</strong>
+              <small>
+                Draw scenario cards to face career moments, draw support cards when you need help, resolve the card in front of you, then use Next turn to refresh actions and apply ongoing status effects.<br /><br />
+                <strong>Goal:</strong> Each stage has a goal shown in the left sidebar. Usually you need enough Tech Cred and enough completed projects to advance, and some stages also require passing a promotion review.<br /><br />
+                <strong>Status effects:</strong> Status effects are ongoing conditions shown under Status effects. They can drain stats, change reviews, or keep pressuring future turns until you clear them with later choices or support cards.<br /><br />
+                <strong>Scores:</strong> Tech Cred tracks career momentum, Energy is your immediate capacity, Support is the help you can draw on, and Burnout measures accumulated strain. In the final stage, Work Front and Home Front also matter, and letting either collapse can end the run.<br /><br />
+                <strong>Game over:</strong> The run ends if Burnout reaches 100 or Energy falls to 0. In the final stage, the run also ends if either Work Front or Home Front drops to 0 before you finish.
+              </small>
+            </div>
+          </div>`;
+      }
+
       function renderStandardOpenTurnMessage() {
         const announcement = consumeStageAdvanceAnnouncement();
         const tag = announcement?.tag ?? 'Open turn';
@@ -525,7 +541,8 @@
             <div class="card-tag">${tag}</div>
             <h2>Choose your next move</h2>
             <p>${text}</p>
-          </div>`;
+          </div>
+          ${renderHowToPlayCallout()}`;
       }
 
       function renderReviewOpenTurnMessage() {
@@ -1018,6 +1035,15 @@
         drawSupportBtn.disabled = shouldBlockSupportButton();
       }
 
+      function renderLandingView() {
+        state.pendingReview = false;
+        state.reviewResult = null;
+        state.activeCard = null;
+        state.cardType = null;
+        state.stageAdvanceAnnouncement = null;
+        render();
+      }
+
       function nextTurn() {
         state.activeCard = null;
         state.cardType = null;
@@ -1042,8 +1068,8 @@
       window.doReview = doReview;
       window.render = render;
 
-      syncProjectChanceState();
-      render();
+      syncProjectScenarioChance();
+      renderLandingView();
     </script>
   </body>
 </html>
