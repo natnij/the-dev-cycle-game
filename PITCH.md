@@ -1,0 +1,3 @@
+# The Dev Cycle
+
+The Dev Cycle is a card-driven narrative game about surviving and advancing through a tech career shaped by bias, invisible labor, uneven opportunity, and burnout. Players draw scenarios, make hard tradeoff decisions, and manage Tech Credit, Support, Energy, and Burnout Index as they move from early-career roles to senior expert, leadership, maternity leave, and caregiving stages. Project opportunities, mentorship, sponsorship, status effects, and structural friction all shape the path. It is both a playable prototype and a conversation tool for exploring how support systems and workplace dynamics change what success costs.

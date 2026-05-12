@@ -1,0 +1,13 @@
+{
+  "name": "dev-cycle-game",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:unit": "rtk node --test tests/game.test.js",
+    "test:e2e": "rtk npx playwright test",
+    "test": "rtk node --test tests/game.test.js && rtk npx playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.2"
+  }
+}

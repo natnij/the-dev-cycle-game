@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Dev Cycle</title>
+    <style>
+      :root {
+        --bg: #0f1221;
+        --panel: #171b31;
+        --panel-alt: #1e2442;
+        --text: #edf1ff;
+        --muted: #a9b2d0;
+        --accent: #89a7ff;
+        --good: #5dd39e;
+        --warn: #ffcc66;
+        --bad: #ff7b7b;
+        --shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: radial-gradient(circle at top, #1a1f3f 0%, var(--bg) 50%);
+        color: var(--text);
+      }
+      button {
+        border: 0;
+        border-radius: 14px;
+        padding: 0.9rem 1.1rem;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+      }
+      button:hover:not(:disabled) { transform: translateY(-1px); }
+      button:disabled { opacity: 0.45; cursor: not-allowed; }
+      .app {
+        min-height: 100vh;
+        padding: 24px;
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 24px;
+      }
+      .sidebar, .main-panel, .log-panel, .pile, .card, .metric {
+        background: rgba(23, 27, 49, 0.88);
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow);
+      }
+      .sidebar {
+        border-radius: 24px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .title h1 { margin: 0; font-size: 2rem; }
+      .title p, .subtitle, .metric small, .pile p, .choice small, .log-entry span { color: var(--muted); }
+      .stats, .summary, .side-column { display: grid; gap: 12px; }
+      .metric { border-radius: 16px; padding: 14px; background: var(--panel-alt); }
+      .metric-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+      .bar { width: 100%; height: 10px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
+      .fill { height: 100%; border-radius: 999px; }
+      .main { display: grid; grid-template-rows: auto auto 1fr; gap: 24px; }
+      .main-panel { border-radius: 24px; padding: 24px; }
+      .stage-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; }
+      .stage-track { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+      .stage-node { background: var(--panel-alt); border: 1px solid rgba(255,255,255,0.08); color: var(--muted); border-radius: 14px; padding: 10px; text-align: center; font-size: 0.9rem; }
+      .stage-node.active { background: linear-gradient(135deg, var(--accent), #607bff); color: #10152e; font-weight: 800; }
+      .stage-node.done { border-color: rgba(93, 211, 158, 0.65); color: var(--text); }
+      .pile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      .pile { border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px; background: linear-gradient(180deg, #20284d 0%, #171b31 100%); }
+      .pile > div:first-child { flex: 1; }
+      .pile button { margin-top: auto; width: 100%; background: var(--accent); color: #0f1530; }
+      .pile.support button { background: var(--warn); }
+      .game-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); gap: 24px; }
+      .card { border-radius: 24px; padding: 24px; background: linear-gradient(180deg, #2b335f 0%, #20274b 100%); min-height: 380px; display: flex; flex-direction: column; justify-content: space-between; }
+      .card-tag { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 999px; width: fit-content; font-size: 0.9rem; color: var(--muted); }
+      .card h2 { margin: 12px 0 8px; font-size: 2rem; }
+      .card p { margin: 0; line-height: 1.55; }
+      .choices { display: grid; gap: 12px; }
+      .choice { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 14px; }
+      .choice strong { display: block; margin-bottom: 6px; }
+      .choice-buttons, .footer-actions, .badges { display: flex; flex-wrap: wrap; gap: 12px; }
+      .choice-buttons button:first-child { background: var(--good); color: #113222; }
+      .choice-buttons button:nth-child(2) { background: var(--bad); color: #3a1111; }
+      .choice-buttons button:nth-child(3) { background: var(--accent); color: #111735; }
+      .log-panel { border-radius: 24px; padding: 20px; }
+      .log-list { display: grid; gap: 10px; max-height: 420px; overflow: auto; }
+      .log-entry { background: var(--panel-alt); border-radius: 14px; padding: 12px; }
+      .badge { border-radius: 999px; padding: 8px 12px; background: rgba(255,255,255,0.08); color: var(--text); font-size: 0.9rem; }
+      .footer-actions button { background: rgba(255,255,255,0.08); color: var(--text); }
+      .winner, .loser { padding: 14px; border-radius: 16px; }
+      .winner { background: linear-gradient(135deg, rgba(93,211,158,0.18), rgba(137,167,255,0.2)); border: 1px solid rgba(93,211,158,0.4); }
+      .loser { background: linear-gradient(135deg, rgba(255,123,123,0.2), rgba(255,204,102,0.15)); border: 1px solid rgba(255,123,123,0.45); }
+      @media (max-width: 1100px) {
+        .app, .game-grid { grid-template-columns: 1fr; }
+        .pile-grid { grid-template-columns: 1fr; }
+        .stage-track { grid-template-columns: repeat(3, 1fr); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="title">
+          <p class="subtitle">Digital prototype</p>
+          <h1>The Dev Cycle</h1>
+          <p>Draw cards, make choices, and survive the career track without burning out.</p>
+        </div>
+        <div class="stats" id="stats"></div>
+        <div class="summary">
+          <div class="metric">
+            <div class="metric-header"><strong>Goal</strong></div>
+            <small id="goal-text"></small>
+          </div>
+          <div class="metric">
+            <div class="metric-header"><strong>Status effects</strong></div>
+            <div class="badges" id="status-badges"></div>
+          </div>
+        </div>
+      </aside>
+      <main class="main">
+        <section class="main-panel">
+          <div class="stage-row">
+            <div>
+              <p class="subtitle">Career board</p>
+              <h2 id="stage-title" style="margin:0;">Stage</h2>
+            </div>
+            <div class="footer-actions">
+              <button id="next-stage-btn">Advance stage</button>
+              <button id="reset-btn">Restart game</button>
+            </div>
+          </div>
+          <div class="stage-track" id="stage-track"></div>
+        </section>
+        <section class="pile-grid">
+          <div class="pile scenario">
+            <div>
+              <p class="subtitle">Main deck</p>
+              <h3>Scenario pile</h3>
+              <p>Draw the next challenge from the current career stage. Higher Tech Cred raises the chance that this draw becomes a project scenario.</p>
+            </div>
+            <button id="draw-scenario-btn">Draw scenario</button>
+          </div>
+          <div class="pile support">
+            <div>
+              <p class="subtitle">Safety deck</p>
+              <h3>Support pile</h3>
+              <p>Draw help from mentors, allies, and recovery resources.</p>
+            </div>
+            <button id="draw-support-btn">Draw support</button>
+          </div>
+        </section>
+        <section class="game-grid">
+          <section class="card" id="active-card"></section>
+          <aside class="side-column">
+            <section class="log-panel">
+              <p class="subtitle">Activity</p>
+              <h3 style="margin-top:0;">Game log</h3>
+              <div class="log-list" id="log-list"></div>
+            </section>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <script type="module">
+      import {
+        STAGES,
+        SUPPORT_DECK,
+        BURNOUT_SPIRAL_STATUS,
+        createInitialState,
+        applyEffects,
+        spendAction,
+        addStatus,
+        removeStatus,
+        addLog,
+        checkRequirementsForStage,
+        rollReview,
+        checkGameState,
+        startNextTurn,
+        drawScenarioCard,
+        getProjectScenarioChance,
+        getSupportDeckForStage,
+        getResolvedSupportEffects,
+        getSupportStatusRemoval,
+        getReviewModifiers,
+        syncBurnoutSpiralStatus,
+        createBurnoutStatusMessage,
+        createStatusAnnouncement
+      } from './game.js';
+
+      window.getSupportDeckForStageForTest = getSupportDeckForStage;
+      window.getSupportDeckFlatForTest = () => SUPPORT_DECK;
+
+
+      const state = createInitialState();
+      window.__gameState = state;
+      const statsEl = document.getElementById('stats');
+      const goalTextEl = document.getElementById('goal-text');
+      const statusBadgesEl = document.getElementById('status-badges');
+      const stageTrackEl = document.getElementById('stage-track');
+      const stageTitleEl = document.getElementById('stage-title');
+      const activeCardEl = document.getElementById('active-card');
+      const logListEl = document.getElementById('log-list');
+      const drawScenarioBtn = document.getElementById('draw-scenario-btn');
+      const drawSupportBtn = document.getElementById('draw-support-btn');
+      const nextStageBtn = document.getElementById('next-stage-btn');
+      const resetBtn = document.getElementById('reset-btn');
+
+      function randomItem(items) {
+        return items[Math.floor(Math.random() * items.length)];
+      }
+
+      function applyProjectScenarioConsequences() {
+        state.projectsCompleted += 1;
+        state.stageProjectsCompleted += 1;
+        if (state.stage === 5) {
+          state.workFront = Math.min(100, state.workFront + 8);
+          state.homeFront = Math.max(0, state.homeFront - 5);
+        }
+      }
+
+      function updateAdvanceButton() {
+        nextStageBtn.disabled = state.gameOver;
+      }
+
+      function drawScenario() {
+        if (state.gameOver || !spendAction(state)) return;
+        const drawState = {
+          ...state,
+          usedScenarioTitles: [...(state.usedScenarioTitles ?? [])],
+          techCred: state.techCred + (state.projectChanceBias ?? 0)
+        };
+        const card = drawScenarioCard(drawState);
+        if (!card) {
+          addLog(state, 'No new scenarios remain this run. Restart the game to reshuffle the scenario pool.');
+          state.actionsRemaining = Math.min(state.actionsRemaining + 1, 2);
+          render();
+          return;
+        }
+        state.usedScenarioTitles = drawState.usedScenarioTitles;
+        state.activeCard = card;
+        state.projectScenarioChance = state.activeCard.projectChance;
+        state.cardType = 'scenario';
+        addLog(state, `Drew ${state.activeCard.isProjectScenario ? 'project scenario' : 'scenario'}: ${state.activeCard.title}.`);
+        render();
+      }
+
+      function describeProjectChanceDelta() {
+        const delta = state.lastProjectChanceDelta ?? 0;
+        if (delta > 0) return `Project draw chance is up ${delta}% because of that choice.`;
+        if (delta < 0) return `Project draw chance is down ${Math.abs(delta)}% because of that choice.`;
+        return 'Project draw chance did not change from that choice.';
+      }
+
+      function getProjectChanceTone() {
+        const delta = state.lastProjectChanceDelta ?? 0;
+        return delta > 0 ? 'var(--good)' : delta < 0 ? 'var(--bad)' : 'var(--muted)';
+      }
+
+      function getProjectChanceDirection() {
+        const delta = state.lastProjectChanceDelta ?? 0;
+        return delta > 0 ? '↑' : delta < 0 ? '↓' : '•';
+      }
+
+      function getProjectChanceFillWidth() {
+        const chance = Math.round((state.projectScenarioChance ?? getProjectScenarioChance(state.techCred)) * 100);
+        return Math.max(12, chance);
+      }
+
+      function getProjectChancePreviewText() {
+        const chance = Math.round((state.projectScenarioChance ?? getProjectScenarioChance(state.techCred)) * 100);
+        return `${chance}% chance the next scenario draw is a project card.`;
+      }
+
+      function describeEffectDelta(label, amount) {
+        if (!amount) return null;
+        const direction = amount > 0 ? 'up' : 'down';
+        return `${label} ${direction} ${Math.abs(amount)}`;
+      }
+
+      function getChoiceEffectSummaries(effects = {}) {
+        const summaries = [
+          describeEffectDelta('Tech Cred', effects.techCred),
+          describeEffectDelta('Energy', effects.energy),
+          describeEffectDelta('Support', effects.support),
+          describeEffectDelta('Burnout', effects.burnout),
+          describeEffectDelta('Work Front', effects.workFront),
+          describeEffectDelta('Home Front', effects.homeFront)
+        ].filter(Boolean);
+
+        return summaries.length ? summaries : ['No tracked stats changed.'];
+      }
+
+      function createResolvedCardState(title, text, kind, tags = [], effects = {}) {
+        return {
+          title,
+          text,
+          resolved: true,
+          kind,
+          tags,
+          effectSummaries: getChoiceEffectSummaries(effects),
+          probabilitySummary: describeProjectChanceDelta(),
+          probabilityPreview: getProjectChancePreviewText()
+        };
+      }
+
+      function createStatusCard(status, change, effects = {}, tags = []) {
+        const message = status === BURNOUT_SPIRAL_STATUS
+          ? createBurnoutStatusMessage(change)
+          : createStatusAnnouncement(status, change);
+        if (!message) return null;
+        return createResolvedCardState(message.title, message.text, message.kind, tags, effects);
+      }
+
+      function getRemovedStatus(card) {
+        return getSupportStatusRemoval(card, state);
+      }
+
+      function shouldShowStatusCard(status, change) {
+        return Boolean(status && change && createStatusCard(status, change));
+      }
+
+      function resolveStatusCard({ gainedStatus = null, removedStatus = null, burnoutStatusChange = null, effects = {}, tags = [] }) {
+        if (gainedStatus && shouldShowStatusCard(gainedStatus, 'gained')) {
+          return createStatusCard(gainedStatus, 'gained', effects, tags);
+        }
+        if (removedStatus && shouldShowStatusCard(removedStatus, 'cleared')) {
+          return createStatusCard(removedStatus, 'cleared', effects, tags);
+        }
+        if (burnoutStatusChange) {
+          return createStatusCard(BURNOUT_SPIRAL_STATUS, burnoutStatusChange, effects, tags);
+        }
+        return null;
+      }
+
+      function logStatusChange(status, change) {
+        if (!status || !change) return;
+        const message = status === BURNOUT_SPIRAL_STATUS
+          ? createBurnoutStatusMessage(change)
+          : createStatusAnnouncement(status, change);
+        if (message) addLog(state, message.text);
+      }
+
+      function getStatusAddedByChoice(choice) {
+        return choice?.status ?? null;
+      }
+
+      function renderProjectChanceCallout() {
+        return `
+          <div class="choice" style="border-color:${getProjectChanceTone()};">
+            <strong>Next draw odds ${getProjectChanceDirection()} ${Math.abs(state.lastProjectChanceDelta ?? 0)}%</strong>
+            <small>${describeProjectChanceDelta()} ${getProjectChancePreviewText()}</small>
+            <div class="bar" style="margin-top:10px;"><div class="fill" style="width:${getProjectChanceFillWidth()}%; background:var(--accent);"></div></div>
+          </div>
+        `;
+      }
+
+      function renderEffectSummaryCallout() {
+        const summaries = state.activeCard?.effectSummaries || ['No tracked stats changed.'];
+        return `
+          <div class="choice">
+            <strong>Other changes from this choice</strong>
+            <small>${summaries.join(' · ')}</small>
+          </div>
+        `;
+      }
+
+      function syncProjectScenarioChance(trackDelta = false, previousChance = state.projectScenarioChance) {
+        const nextChance = getProjectScenarioChance(state.techCred + (state.projectChanceBias ?? 0));
+        state.projectScenarioChance = nextChance;
+        state.lastProjectChanceDelta = trackDelta ? Math.round((nextChance - (previousChance ?? nextChance)) * 100) : 0;
+      }
+
+      function updateProjectScenarioChanceAfterChoice(choice) {
+        const previousChance = state.projectScenarioChance ?? getProjectScenarioChance(state.techCred + (state.projectChanceBias ?? 0));
+        const techShift = typeof choice.effects.techCred === 'number' ? choice.effects.techCred : 0;
+        const supportShift = typeof choice.effects.support === 'number' ? Math.round(choice.effects.support / 3) : 0;
+        const burnoutShift = typeof choice.effects.burnout === 'number' ? -Math.round(choice.effects.burnout / 6) : 0;
+        state.projectChanceBias = (state.projectChanceBias ?? 0) + techShift + supportShift + burnoutShift;
+        syncProjectScenarioChance(true, previousChance);
+      }
+
+      function drawSupport() {
+        if (state.gameOver || state.support < 15 || !spendAction(state)) return;
+        const card = randomItem(getSupportDeckForStage(state.stage));
+        const resolvedEffects = getResolvedSupportEffects(card, state);
+        const removedStatus = getRemovedStatus(card);
+        applyEffects(state, resolvedEffects);
+        if (removedStatus) removeStatus(state, removedStatus);
+        const burnoutStatusChange = syncBurnoutSpiralStatus(state);
+        if (state.stage === 5) state.homeFront = Math.min(100, state.homeFront + 6);
+        syncProjectScenarioChance(false);
+        addLog(state, `Support drawn: ${card.title}. Community and advocacy create room to recover.`);
+        const statusCard = resolveStatusCard({ removedStatus, burnoutStatusChange, effects: resolvedEffects });
+        if (removedStatus) logStatusChange(removedStatus, 'cleared');
+        if (burnoutStatusChange) logStatusChange(BURNOUT_SPIRAL_STATUS, burnoutStatusChange);
+        state.activeCard = statusCard ?? createResolvedCardState(card.title, card.text, 'Support', [], resolvedEffects);
+        state.cardType = 'support';
+        checkGameState(state);
+        render();
+      }
+
+      function resolveChoice(choiceKey) {
+        if (!state.activeCard || state.cardType !== 'scenario' || state.gameOver) return;
+        const choice = state.activeCard[choiceKey];
+        const wasProjectScenario = state.activeCard.isProjectScenario;
+        const gainedStatus = getStatusAddedByChoice(choice);
+        applyEffects(state, choice.effects);
+        addStatus(state, gainedStatus);
+        const burnoutStatusChange = syncBurnoutSpiralStatus(state);
+        if (wasProjectScenario) applyProjectScenarioConsequences();
+        if (state.stage === 5) {
+          if (choiceKey === 'agree') {
+            state.workFront = Math.min(100, state.workFront + 4);
+            state.homeFront = Math.max(0, state.homeFront - 8);
+          } else {
+            state.homeFront = Math.min(100, state.homeFront + 4);
+            state.workFront = Math.max(0, state.workFront - 8);
+          }
+        }
+        updateProjectScenarioChanceAfterChoice(choice);
+        addLog(state, choice.result);
+        if (gainedStatus) logStatusChange(gainedStatus, 'gained');
+        if (burnoutStatusChange) logStatusChange(BURNOUT_SPIRAL_STATUS, burnoutStatusChange);
+        const statusCard = resolveStatusCard({ gainedStatus, burnoutStatusChange, effects: choice.effects, tags: state.activeCard.tags || [] });
+        state.activeCard = statusCard ?? createResolvedCardState(
+          state.activeCard.title,
+          choice.result,
+          wasProjectScenario ? 'Project scenario resolved' : 'Scenario resolved',
+          state.activeCard.tags || [],
+          choice.effects
+        );
+        checkGameState(state);
+        if (autoAdvanceStageIfReady()) return;
+        render();
+      }
+
+      function autoAdvanceStageIfReady() {
+        if (state.gameOver || state.stage >= STAGES.length - 1) return false;
+        if (!checkRequirementsForStage(state)) return false;
+        const review = STAGES[state.stage].review;
+        if (review && !state.reviewResult?.passed) return false;
+        addLog(state, `Congratulations! You reached the goal for ${STAGES[state.stage].name}.`);
+        advanceStage();
+        return true;
+      }
+
+      function doReview() {
+        if (!state.pendingReview || state.gameOver) return;
+        const result = rollReview(state);
+        const burnoutStatusChange = syncBurnoutSpiralStatus(state);
+        if (result.passed) {
+          addLog(state, `Review passed: rolled ${result.die}, total ${result.total} vs target ${result.target}.`);
+          if (autoAdvanceStageIfReady()) return;
+        } else {
+          addLog(state, `Review failed: rolled ${result.die}, total ${result.total} vs target ${result.target}. Burnout rises and you remain in stage.`);
+        }
+        if (burnoutStatusChange) {
+          const message = createBurnoutStatusMessage(burnoutStatusChange);
+          addLog(state, message.text);
+          state.activeCard = createResolvedCardState(message.title, message.text, message.kind, [], {});
+          state.cardType = 'support';
+        }
+        render();
+      }
+
+      function continuePromotion() {
+        if (state.gameOver || !STAGES[state.stage].review) return;
+        state.pendingReview = false;
+        state.reviewResult = null;
+        state.activeCard = null;
+        state.cardType = null;
+        state.actionsRemaining = Math.max(state.actionsRemaining, 1);
+        render();
+      }
+
+      function getReviewFollowUpButtons() {
+        return state.reviewResult?.passed
+          ? `<button onclick="window.nextTurn()">Continue</button>`
+          : `<button onclick="window.nextTurn()">Next turn</button><button onclick="window.continuePromotion()">Draw more cards</button>`;
+      }
+
+      function hasUnlockedReview() {
+        return Boolean(STAGES[state.stage].review && (state.pendingReview || state.reviewResult));
+      }
+
+      function renderPendingReviewButtons() {
+        return `<button onclick="window.doReview()">Roll review</button><button onclick="window.continuePromotion()">Draw more cards</button>`;
+      }
+
+      function getStageAdvanceAnnouncementFor(nextStage) {
+        if (nextStage === 1) {
+          return {
+            tag: 'Promotion',
+            text: 'Congratulations — you made it from Junior Hunt into Senior Promotion. The bar is higher now, but so is your track. Use this turn to decide whether to push for momentum or shore up your position.'
+          };
+        }
+
+        return {
+          tag: 'Stage advanced',
+          text: `Congratulations — you advanced to ${STAGES[nextStage].name}. Use this turn to decide how you want to enter the next stage.`
+        };
+      }
+
+      function consumeStageAdvanceAnnouncement() {
+        const announcement = state.stageAdvanceAnnouncement;
+        state.stageAdvanceAnnouncement = null;
+        return announcement;
+      }
+
+      function renderStandardOpenTurnMessage() {
+        const announcement = consumeStageAdvanceAnnouncement();
+        const tag = announcement?.tag ?? 'Open turn';
+        const text = announcement?.text ?? 'Use the Draw scenario and Draw support buttons above to continue the turn.';
+        return `
+          <div>
+            <div class="card-tag">${tag}</div>
+            <h2>Choose your next move</h2>
+            <p>${text}</p>
+          </div>`;
+      }
+
+      function renderReviewOpenTurnMessage() {
+        return `
+          <div>
+            <div class="card-tag">Promotion path open</div>
+            <h2>Choose your next move</h2>
+            <p>You can roll the promotion review now, or take another turn to draw more cards before trying again.</p>
+          </div>
+          <div class="choices">
+            <div class="choice-buttons">
+              <button onclick="window.doReview()">Roll review</button>
+            </div>
+          </div>`;
+      }
+
+      function renderOpenTurnMessage() {
+        if (hasUnlockedReview()) return renderReviewOpenTurnMessage();
+        return renderStandardOpenTurnMessage();
+      }
+
+      function getStageAdvanceLog(nextStage) {
+        return `Switched to ${STAGES[nextStage].name}.`;
+      }
+
+      function setStageAdvanceAnnouncement(nextStage) {
+        state.stageAdvanceAnnouncement = getStageAdvanceAnnouncementFor(nextStage);
+      }
+
+      function clearStageAdvanceAnnouncement() {
+        state.stageAdvanceAnnouncement = null;
+      }
+
+      function resetOpenTurnAnnouncements() {
+        clearStageAdvanceAnnouncement();
+      }
+
+      function prepareOpenTurnAnnouncements(nextStage) {
+        setStageAdvanceAnnouncement(nextStage);
+      }
+
+      function maybePrepareStageAnnouncement(nextStage) {
+        prepareOpenTurnAnnouncements(nextStage);
+      }
+
+      function applyStageAdvanceAnnouncement(nextStage) {
+        maybePrepareStageAnnouncement(nextStage);
+      }
+
+      function resetAnnouncementsOnRestart() {
+        resetOpenTurnAnnouncements();
+      }
+
+      function announceStageAdvance(nextStage) {
+        applyStageAdvanceAnnouncement(nextStage);
+      }
+
+      function clearAnnouncementsBeforeManualReset() {
+        resetAnnouncementsOnRestart();
+      }
+
+      function clearOpenTurnAnnouncements() {
+        clearAnnouncementsBeforeManualReset();
+      }
+
+      function clearAnnouncementsOnAdvance() {
+        clearOpenTurnAnnouncements();
+      }
+
+      function setAdvanceAnnouncement(nextStage) {
+        announceStageAdvance(nextStage);
+      }
+
+      function updateOpenTurnAnnouncementForStage(nextStage) {
+        setAdvanceAnnouncement(nextStage);
+      }
+
+      function storeStageAdvanceAnnouncement(nextStage) {
+        updateOpenTurnAnnouncementForStage(nextStage);
+      }
+
+      function prepareAdvanceCopy(nextStage) {
+        storeStageAdvanceAnnouncement(nextStage);
+      }
+
+      function queueStageAdvanceAnnouncement(nextStage) {
+        prepareAdvanceCopy(nextStage);
+      }
+
+      function createStageMessage(nextStage) {
+        queueStageAdvanceAnnouncement(nextStage);
+      }
+
+      function registerStageAdvanceMessage(nextStage) {
+        createStageMessage(nextStage);
+      }
+
+      function armStageAdvanceMessage(nextStage) {
+        registerStageAdvanceMessage(nextStage);
+      }
+
+      function queueStageAdvanceCopy(nextStage) {
+        armStageAdvanceMessage(nextStage);
+      }
+
+      function createOpenTurnAnnouncement(nextStage) {
+        queueStageAdvanceCopy(nextStage);
+      }
+
+      function persistOpenTurnAnnouncement(nextStage) {
+        createOpenTurnAnnouncement(nextStage);
+      }
+
+      function stageAdvanced(nextStage) {
+        persistOpenTurnAnnouncement(nextStage);
+      }
+
+      function rememberStageAnnouncement(nextStage) {
+        stageAdvanced(nextStage);
+      }
+
+      function queueStageAnnouncement(nextStage) {
+        rememberStageAnnouncement(nextStage);
+      }
+
+      function setStageAnnouncement(nextStage) {
+        queueStageAnnouncement(nextStage);
+      }
+
+      function primeStageAnnouncement(nextStage) {
+        setStageAnnouncement(nextStage);
+      }
+
+      function initializeStageAnnouncement(nextStage) {
+        primeStageAnnouncement(nextStage);
+      }
+
+      function installStageAnnouncement(nextStage) {
+        initializeStageAnnouncement(nextStage);
+      }
+
+      function scheduleStageAnnouncement(nextStage) {
+        installStageAnnouncement(nextStage);
+      }
+
+      function createAnnouncementForStageAdvance(nextStage) {
+        scheduleStageAnnouncement(nextStage);
+      }
+
+      function stageAdvanceTriggered(nextStage) {
+        createAnnouncementForStageAdvance(nextStage);
+      }
+
+      function handleAdvanceAnnouncement(nextStage) {
+        stageAdvanceTriggered(nextStage);
+      }
+
+      function startStageAnnouncement(nextStage) {
+        handleAdvanceAnnouncement(nextStage);
+      }
+
+      function setAnnouncementForAdvance(nextStage) {
+        startStageAnnouncement(nextStage);
+      }
+
+      function rememberAnnouncementForAdvance(nextStage) {
+        setAnnouncementForAdvance(nextStage);
+      }
+
+      function enqueueAnnouncementForAdvance(nextStage) {
+        rememberAnnouncementForAdvance(nextStage);
+      }
+
+      function createAdvanceAnnouncement(nextStage) {
+        enqueueAnnouncementForAdvance(nextStage);
+      }
+
+      function setStageAdvanceCardText(nextStage) {
+        createAdvanceAnnouncement(nextStage);
+      }
+
+      function noteAdvance(nextStage) {
+        setStageAdvanceCardText(nextStage);
+      }
+
+      function maybeQueueAdvanceAnnouncement(nextStage) {
+        noteAdvance(nextStage);
+      }
+
+      function registerAdvanceAnnouncement(nextStage) {
+        maybeQueueAdvanceAnnouncement(nextStage);
+      }
+
+      function showAdvanceAnnouncement(nextStage) {
+        registerAdvanceAnnouncement(nextStage);
+      }
+
+      function prepareAdvanceAnnouncement(nextStage) {
+        showAdvanceAnnouncement(nextStage);
+      }
+
+      function queueAdvanceOpenTurnMessage(nextStage) {
+        prepareAdvanceAnnouncement(nextStage);
+      }
+
+      function setStageAdvanceOpenTurnMessage(nextStage) {
+        queueAdvanceOpenTurnMessage(nextStage);
+      }
+
+      function recordStageAdvanceAnnouncement(nextStage) {
+        setStageAdvanceOpenTurnMessage(nextStage);
+      }
+
+      function storeAdvanceAnnouncement(nextStage) {
+        recordStageAdvanceAnnouncement(nextStage);
+      }
+
+      function updateAnnouncementAfterAdvance(nextStage) {
+        storeAdvanceAnnouncement(nextStage);
+      }
+
+      function prepareAnnouncementAfterAdvance(nextStage) {
+        updateAnnouncementAfterAdvance(nextStage);
+      }
+
+      function queueAnnouncementAfterAdvance(nextStage) {
+        prepareAnnouncementAfterAdvance(nextStage);
+      }
+
+      function handleAnnouncementAfterAdvance(nextStage) {
+        queueAnnouncementAfterAdvance(nextStage);
+      }
+
+      function configureStageAdvanceAnnouncement(nextStage) {
+        handleAnnouncementAfterAdvance(nextStage);
+      }
+
+      function armAnnouncementAfterAdvance(nextStage) {
+        configureStageAdvanceAnnouncement(nextStage);
+      }
+
+      function setAnnouncementStateAfterAdvance(nextStage) {
+        armAnnouncementAfterAdvance(nextStage);
+      }
+
+      function createStageTransitionAnnouncement(nextStage) {
+        setAnnouncementStateAfterAdvance(nextStage);
+      }
+
+      function queueTransitionAnnouncement(nextStage) {
+        createStageTransitionAnnouncement(nextStage);
+      }
+
+      function prepareTransitionAnnouncement(nextStage) {
+        queueTransitionAnnouncement(nextStage);
+      }
+
+      function onStageAdvanced(nextStage) {
+        prepareTransitionAnnouncement(nextStage);
+      }
+
+      function awaitingNextTurn() {
+        return Boolean(state.activeCard?.resolved || state.cardType === 'support');
+      }
+
+      function shouldBlockDrawButtons() {
+        return state.gameOver || awaitingNextTurn();
+      }
+
+      function shouldBlockSupportButton() {
+        return state.gameOver || awaitingNextTurn() || state.support < 15;
+      }
+
+      function advanceStage() {
+        if (state.gameOver) return;
+        const nextStage = (state.stage + 1) % STAGES.length;
+        state.stage = nextStage;
+        if (nextStage !== 4) state.energy = Math.min(100, state.energy + 10);
+        state.stageProjectsCompleted = 0;
+        state.reviewResult = null;
+        state.pendingReview = false;
+        state.activeCard = null;
+        state.cardType = null;
+        setStageAdvanceAnnouncement(nextStage);
+        addLog(state, `Switched to ${STAGES[state.stage].name}.`);
+        render();
+      }
+
+      function resetGame() {
+        const fresh = createInitialState();
+        Object.keys(state).forEach((key) => { state[key] = fresh[key]; });
+        state.projectChanceBias = 0;
+        state.lastProjectChanceDelta = 0;
+        clearStageAdvanceAnnouncement();
+        render();
+      }
+
+      function getMetricFillPercent(metric, value) {
+        const min = metric.min ?? 0;
+        const max = metric.max;
+        return Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+      }
+
+      function renderStats() {
+        const metrics = [
+          { label: 'Tech Cred', key: 'techCred', min: -25, max: 250, color: 'var(--accent)' },
+          { label: 'Energy', key: 'energy', min: 0, max: 100, color: 'var(--warn)' },
+          { label: 'Support', key: 'support', min: -10, max: 100, color: 'var(--good)' },
+          { label: 'Burnout', key: 'burnout', min: 0, max: 100, color: 'var(--bad)' }
+        ];
+        const currentProjectChance = getProjectScenarioChance(state.techCred + (state.projectChanceBias ?? 0));
+        const projectChanceDirection = getProjectChanceDirection();
+        metrics.push({
+          label: 'Project Draw %',
+          key: 'projectScenarioChance',
+          min: 0,
+          max: 1,
+          color: 'var(--accent)',
+          formatter: () => `${Math.round(currentProjectChance * 100)}% ${projectChanceDirection}${state.lastProjectChanceDelta ? ` ${Math.abs(state.lastProjectChanceDelta)}%` : ''}`
+        });
+        state.projectScenarioChance = currentProjectChance;
+        if (state.stage === 5) {
+          metrics.push(
+            { label: 'Work Front', key: 'workFront', min: 0, max: 100, color: '#60a5fa' },
+            { label: 'Home Front', key: 'homeFront', min: 0, max: 100, color: '#f472b6' }
+          );
+        }
+        statsEl.innerHTML = metrics.map((metric) => {
+          const value = metric.key === 'projectScenarioChance' ? currentProjectChance : state[metric.key];
+          const displayValue = metric.formatter ? metric.formatter(value) : `${value} / ${metric.max}`;
+          return `
+          <div class="metric">
+            <div class="metric-header"><strong>${metric.label}</strong><span>${displayValue}</span></div>
+            <div class="bar"><div class="fill" style="width:${getMetricFillPercent(metric, value)}%; background:${metric.color};"></div></div>
+          </div>
+        `;
+        }).join('');
+      }
+
+      function renderStatusBadges() {
+        const badges = state.statusEffects.length ? state.statusEffects.map((status) => `<span class="badge">${status}</span>`) : ['<span class="badge">No active status</span>'];
+        badges.push(`<span class="badge">Projects ${state.stageProjectsCompleted}/${STAGES[state.stage].projectsRequired || 0}</span>`);
+        statusBadgesEl.innerHTML = badges.join('');
+      }
+
+      function renderStageTrack() {
+        stageTitleEl.textContent = `${state.stage + 1}. ${STAGES[state.stage].name}`;
+        goalTextEl.textContent = STAGES[state.stage].goal;
+        stageTrackEl.innerHTML = STAGES.map((stage, index) => {
+          const className = index === state.stage ? 'stage-node active' : index < state.stage ? 'stage-node done' : 'stage-node';
+          return `<div class="${className}">${index + 1}<br />${stage.name}</div>`;
+        }).join('');
+      }
+
+      function renderCard() {
+        if (state.gameOver) {
+          const won = !['Burnout', 'Exhaustion', 'Balance Collapse'].includes(state.ending);
+          activeCardEl.innerHTML = `
+            <div>
+              <div class="card-tag">${won ? 'Ending' : 'Game over'}</div>
+              <h2>${won ? `${state.ending} ending` : state.ending}</h2>
+              <p>${won ? 'You made it through the career track with a distinct kind of success.' : 'The system outpaced your available capacity this run.'}</p>
+            </div>
+            <div class="${won ? 'winner' : 'loser'}">
+              <strong>${won ? 'Final state' : 'Loss state'}</strong>
+              <p style="margin-top:8px;">Tech Cred - ${state.techCred} | Burnout - ${state.burnout} | Support - ${state.support} | Projects - ${state.projectsCompleted}</p>
+            </div>`;
+          return;
+        }
+        if (state.pendingReview) {
+          const review = STAGES[state.stage].review;
+          const {
+            techBonus,
+            extraTechBonus,
+            supportBonus,
+            projectDrawBonus,
+            gluePenalty,
+            pigeonholedPenalty,
+            burnoutPenalty,
+            projectDrawPercent
+          } = getReviewModifiers(state);
+          const fixedTotal = review.base + techBonus + extraTechBonus + supportBonus + projectDrawBonus + gluePenalty + pigeonholedPenalty + burnoutPenalty;
+          const minTotal = fixedTotal + 1;
+          const maxTotal = fixedTotal + 6;
+          activeCardEl.innerHTML = `
+            <div>
+              <div class="card-tag">Promotion review</div>
+              <h2>${STAGES[state.stage].name} review</h2>
+              <p>You can roll now, or wait and draw more cards on later turns before committing to the review.</p>
+            </div>
+            <div class="choices">
+              <div class="choice"><strong>Target ${review.target}</strong><small>Current range ${minTotal}-${maxTotal} after the die roll.</small></div>
+              <div class="choice"><strong>What counts right now</strong><small>Base ${review.base}${techBonus ? ' · Tech Cred +2' : ''}${extraTechBonus ? ' · Tech Cred 150% threshold +2' : ''}${supportBonus ? ' · Support +2' : ''}${projectDrawBonus ? ` · Project Draw % ${projectDrawPercent}% +2` : ''}${gluePenalty ? ' · The Glue -2' : ''}${pigeonholedPenalty ? ' · Pigeonholed -1' : ''}${burnoutPenalty ? ' · Burnout -2' : ''}${!techBonus && !extraTechBonus && !supportBonus && !projectDrawBonus && !gluePenalty && !pigeonholedPenalty && !burnoutPenalty ? ' · No modifiers' : ''}</small></div>
+              <div class="choice"><strong>If you fail</strong><small>You stay in this stage, gain 10 Burnout, lose 6 Energy, and can build more stats before the next review.</small></div>
+              <div class="choice-buttons">
+                ${renderPendingReviewButtons()}
+              </div>
+            </div>`;
+          return;
+        }
+        if (state.reviewResult && !state.activeCard) {
+          activeCardEl.innerHTML = `
+            <div>
+              <div class="card-tag">Promotion review ${state.reviewResult.passed ? 'passed' : 'failed'}</div>
+              <h2>${STAGES[state.stage].name} review ${state.reviewResult.passed ? 'passed' : 'failed'}</h2>
+              <p>${state.reviewResult.passed ? 'You cleared the review. Move to the next turn to continue into the next stage.' : 'You did not clear the review yet. Take another turn to recover, build stats, and try again later.'}</p>
+            </div>
+            <div class="choices">
+              <div class="choice"><strong>Roll ${state.reviewResult.die}</strong><small>Total ${state.reviewResult.total} vs target ${state.reviewResult.target}.</small></div>
+              <div class="choice-buttons">
+                ${getReviewFollowUpButtons()}
+              </div>
+            </div>`;
+          return;
+        }
+        if (!state.activeCard) {
+          activeCardEl.innerHTML = renderOpenTurnMessage();
+          return;
+        }
+
+        if (state.cardType === 'support') {
+          activeCardEl.innerHTML = `
+            <div>
+              <div class="card-tag">${state.activeCard.kind || 'Support'}</div>
+              <h2>${state.activeCard.title}</h2>
+              <p>${state.activeCard.text}</p>
+            </div>
+            <div class="choices">
+              ${renderEffectSummaryCallout()}
+              ${renderProjectChanceCallout()}
+              <div class="choice-buttons">
+                <button onclick="window.nextTurn()">Next turn</button>
+              </div>
+            </div>`;
+          return;
+        }
+
+        if (state.cardType === 'scenario' && state.activeCard.resolved) {
+          const tags = state.activeCard.tags?.length ? `<p style="margin-top:12px;color:var(--muted);">Tags: ${state.activeCard.tags.join(' | ')}</p>` : '';
+          activeCardEl.innerHTML = `
+            <div>
+              <div class="card-tag">${state.activeCard.kind || 'Scenario resolved'}</div>
+              <h2>${state.activeCard.kind === 'Project scenario resolved' ? `[Project] ${state.activeCard.title}` : state.activeCard.title}</h2>
+              <p>${state.activeCard.text}</p>
+              ${tags}
+            </div>
+            <div class="choices">
+              ${renderEffectSummaryCallout()}
+              ${renderProjectChanceCallout()}
+              <div class="choice-buttons">
+                <button onclick="window.nextTurn()">Next turn</button>
+              </div>
+            </div>`;
+          return;
+        }
+        if (state.cardType === 'scenario' && !state.activeCard.resolved) {
+          activeCardEl.innerHTML = `
+            <div>
+              <div class="card-tag">${state.activeCard.isProjectScenario ? 'Project scenario' : 'Scenario'} - ${STAGES[state.stage].name}</div>
+              <h2>${state.activeCard.isProjectScenario ? `[Project] ${state.activeCard.title}` : state.activeCard.title}</h2>
+              <p>${state.activeCard.text}</p>
+            </div>
+            <div class="choices">
+              <div class="choice"><strong>${state.activeCard.agree.label}</strong><small>${state.activeCard.agree.summary ? `${state.activeCard.agree.summary} ` : ''}Often the higher-compliance or higher-overperformance route.</small></div>
+              <div class="choice"><strong>${state.activeCard.decline.label}</strong><small>${state.activeCard.decline.summary ? `${state.activeCard.decline.summary} ` : ''}Often the boundary-setting or self-protective route.</small></div>
+              <div class="choice-buttons">
+                <button onclick="window.resolveChoice('agree')">${state.activeCard.agree.label}</button>
+                <button onclick="window.resolveChoice('decline')">${state.activeCard.decline.label}</button>
+              </div>
+            </div>`;
+          return;
+        }
+      }
+
+      function renderLog() {
+        logListEl.innerHTML = state.log.map((entry, index) => `
+          <div class="log-entry"><strong>Entry ${state.log.length - index}</strong><span>${entry}</span></div>
+        `).join('');
+      }
+
+      function render() {
+        updateAdvanceButton();
+        renderStats();
+        renderStatusBadges();
+        renderStageTrack();
+        renderCard();
+        renderLog();
+        drawScenarioBtn.disabled = shouldBlockDrawButtons();
+        drawSupportBtn.disabled = shouldBlockSupportButton();
+      }
+
+      function nextTurn() {
+        state.activeCard = null;
+        state.cardType = null;
+        const advanced = startNextTurn(state);
+        if (!advanced) {
+          state.actionsRemaining = 0;
+          startNextTurn(state);
+        }
+        render();
+      }
+
+      drawScenarioBtn.addEventListener('click', drawScenario);
+      drawSupportBtn.addEventListener('click', drawSupport);
+      nextStageBtn.addEventListener('click', advanceStage);
+      resetBtn.addEventListener('click', resetGame);
+
+      window.drawScenario = drawScenario;
+      window.drawSupport = drawSupport;
+      window.resolveChoice = resolveChoice;
+      window.nextTurn = nextTurn;
+      window.continuePromotion = continuePromotion;
+      window.doReview = doReview;
+      window.render = render;
+
+      syncProjectChanceState();
+      render();
+    </script>
+  </body>
+</html>

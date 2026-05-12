@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rtk ls *)",
+      "Bash(rtk find *)",
+      "Bash(rtk grep *)",
+      "Bash(rtk node *)",
+      "Bash(rtk npx *)",
+      "Bash(python3 *)",
+      "Bash(rtk read *)",
+      "Bash(rtk err *)",
+      "Bash(rtk python3 *)",
+      "Bash(rtk git *)"
+    ]
+  }
+}
