@@ -454,6 +454,11 @@
         const burnoutStatusChange = syncBurnoutSpiralStatus(state);
         if (result.passed) {
           addLog(state, `Review passed: rolled ${result.die}, total ${result.total} vs target ${result.target}.`);
+          if (result.passed && state.stage === STAGES.length - 1) {
+            checkGameState(state);
+            render();
+            return;
+          }
           if (autoAdvanceStageIfReady()) return;
         } else {
           addLog(state, `Review failed: rolled ${result.die}, total ${result.total} vs target ${result.target}. Burnout rises and you remain in stage.`);
@@ -804,6 +809,7 @@
         state.pendingReview = false;
         state.activeCard = null;
         state.cardType = null;
+        state.actionsRemaining = Math.max(state.actionsRemaining, 1);
         setStageAdvanceAnnouncement(nextStage);
         addLog(state, `Switched to ${STAGES[state.stage].name}.`);
         render();

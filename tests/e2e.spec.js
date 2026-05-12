@@ -340,21 +340,80 @@ test('advancing from junior hunt shows a promotion announcement on the next move
   await expect(page.locator('#active-card')).toContainText('Choose your next move');
   await expect(page.locator('#active-card')).toContainText('Congratulations');
   await expect(page.locator('#active-card')).toContainText('Junior Hunt into Senior Promotion');
+  await expect(page.locator('#draw-scenario-btn')).toBeEnabled();
+  await page.locator('#draw-scenario-btn').click();
+  await expect(page.locator('#active-card h2')).not.toContainText('Choose your next move');
+  await expect(page.locator('#active-card .choice-buttons button')).toHaveCount(2);
 
   await page.evaluate(() => {
     window.__gameState.stage = 5;
     window.__gameState.stageAdvanceAnnouncement = null;
+    window.__gameState.activeCard = null;
+    window.__gameState.cardType = null;
+    window.__gameState.actionsRemaining = 1;
     window.render();
   });
   await page.getByRole('button', { name: 'Advance stage' }).click();
   await expect(page.locator('#stage-title')).toContainText('1. Junior Hunt');
 });
 
-test('entering maternity leave does not grant the usual stage energy bump', async ({ page }) => {
+test('advancing into leadership leap leaves top draw buttons usable', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    window.__gameState.stage = 1;
+    window.__gameState.activeCard = null;
+    window.__gameState.cardType = null;
+    window.__gameState.actionsRemaining = 1;
+    window.__gameState.stageAdvanceAnnouncement = null;
+    window.render();
+  });
+
+  await page.getByRole('button', { name: 'Advance stage' }).click();
+  await expect(page.locator('#stage-title')).toContainText('3. Leadership Leap');
+  await expect(page.locator('#active-card')).toContainText('Choose your next move');
+  await expect(page.locator('#draw-scenario-btn')).toBeEnabled();
+  await expect(page.locator('#draw-support-btn')).toBeEnabled();
+  await page.locator('#draw-support-btn').click();
+  await expect(page.locator('#active-card h2')).not.toContainText('Choose your next move');
+});
+
+test('management-track review pass should advance into maternity leave with usable draw buttons', async ({ page }) => {
+  await page.addInitScript(() => {
+    Math.random = () => 0.99;
+  });
+  await page.goto('/');
+  await page.evaluate(() => {
+    window.__gameState.stage = 3;
+    window.__gameState.techCred = 177;
+    window.__gameState.support = 40;
+    window.__gameState.burnout = 20;
+    window.__gameState.stageProjectsCompleted = 4;
+    window.__gameState.pendingReview = true;
+    window.__gameState.reviewResult = null;
+    window.__gameState.activeCard = null;
+    window.__gameState.cardType = null;
+    window.__gameState.actionsRemaining = 1;
+    window.render();
+  });
+
+  await page.getByRole('button', { name: 'Roll review' }).click();
+  await expect(page.locator('#stage-title')).toContainText('5. Maternity Leave');
+  await expect(page.locator('#active-card')).toContainText('Choose your next move');
+  await expect(page.locator('#draw-scenario-btn')).toBeEnabled();
+  await page.locator('#draw-scenario-btn').click();
+  await expect(page.locator('#active-card h2')).not.toContainText('Choose your next move');
+});
+
+
+test('entering maternity leave does not grant the usual stage energy bump and keeps draw buttons usable', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => {
     window.__gameState.stage = 3;
     window.__gameState.energy = 40;
+    window.__gameState.activeCard = null;
+    window.__gameState.cardType = null;
+    window.__gameState.actionsRemaining = 1;
+    window.__gameState.stageAdvanceAnnouncement = null;
     window.render();
   });
 
@@ -363,6 +422,671 @@ test('entering maternity leave does not grant the usual stage energy bump', asyn
   await expect(page.locator('#goal-text')).toContainText('Complete 2 projects');
   await expect(page.locator('#stats')).toContainText('Energy');
   await expect(page.locator('#stats')).toContainText('40 / 100');
+  await expect(page.locator('#active-card')).toContainText('Choose your next move');
+  await expect(page.locator('#draw-scenario-btn')).toBeEnabled();
+  await page.locator('#draw-scenario-btn').click();
+  await expect(page.locator('#active-card h2')).not.toContainText('Choose your next move');
+});
+
+test('final-stage review pass should go straight to the ending screen', async ({ page }) => {
+  await page.addInitScript(() => {
+    Math.random = () => 0.99;
+  });
+  await page.goto('/');
+  await page.evaluate(() => {
+    window.__gameState.stage = 5;
+    window.__gameState.techCred = 220;
+    window.__gameState.support = 40;
+    window.__gameState.burnout = 20;
+    window.__gameState.stageProjectsCompleted = 3;
+    window.__gameState.pendingReview = true;
+    window.__gameState.reviewResult = null;
+    window.__gameState.activeCard = null;
+    window.__gameState.cardType = null;
+    window.__gameState.actionsRemaining = 1;
+    window.render();
+  });
+
+  await page.getByRole('button', { name: 'Roll review' }).click();
+  await expect(page.locator('#active-card')).toContainText('CTO ending');
+  await expect(page.locator('#active-card')).toContainText('Final state');
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+test('advancing into the default caretaker leaves top draw buttons usable', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    window.__gameState.stage = 4;
+    window.__gameState.activeCard = null;
+    window.__gameState.cardType = null;
+    window.__gameState.actionsRemaining = 1;
+    window.__gameState.stageAdvanceAnnouncement = null;
+    window.render();
+  });
+
+  await page.getByRole('button', { name: 'Advance stage' }).click();
+  await expect(page.locator('#stage-title')).toContainText('6. The Default Caretaker');
+  await expect(page.locator('#active-card')).toContainText('Choose your next move');
+  await expect(page.locator('#draw-support-btn')).toBeEnabled();
+  await page.locator('#draw-support-btn').click();
+  await expect(page.locator('#active-card h2')).not.toContainText('Choose your next move');
+});
+
+test('senior-promotion review pass should advance into leadership leap with usable draw buttons', async ({ page }) => {
+  await page.addInitScript(() => {
+    Math.random = () => 0.99;
+  });
+  await page.goto('/');
+  await page.evaluate(() => {
+    window.__gameState.stage = 1;
+    window.__gameState.techCred = 87;
+    window.__gameState.support = 40;
+    window.__gameState.burnout = 20;
+    window.__gameState.stageProjectsCompleted = 3;
+    window.__gameState.pendingReview = true;
+    window.__gameState.reviewResult = null;
+    window.__gameState.activeCard = null;
+    window.__gameState.cardType = null;
+    window.__gameState.actionsRemaining = 1;
+    window.render();
+  });
+
+  await page.getByRole('button', { name: 'Roll review' }).click();
+  await expect(page.locator('#stage-title')).toContainText('3. Leadership Leap');
+  await expect(page.locator('#active-card')).toContainText('Choose your next move');
+  await expect(page.locator('#draw-scenario-btn')).toBeEnabled();
+  await page.locator('#draw-scenario-btn').click();
+  await expect(page.locator('#active-card h2')).not.toContainText('Choose your next move');
+});
+
+
+
+test('review follow-up draw-more path still re-enables top draw buttons', async ({ page }) => {
+  await page.addInitScript(() => {
+    Math.random = () => 0;
+  });
+  await page.goto('/');
+  await page.evaluate(() => {
+    window.__gameState.stage = 1;
+    window.__gameState.techCred = 58;
+    window.__gameState.support = 20;
+    window.__gameState.burnout = 59;
+    window.__gameState.stageProjectsCompleted = 3;
+    window.__gameState.reviewResult = null;
+    window.__gameState.pendingReview = true;
+    window.render();
+  });
+
+  await expect(page.locator('#active-card')).toContainText('Promotion review');
+  await expect(page.locator('#active-card .choice-buttons button')).toHaveCount(2);
+  await expect(page.locator('#active-card .choice-buttons')).toContainText('Roll review');
+  await expect(page.locator('#active-card .choice-buttons')).toContainText('Draw more cards');
+  await expect(page.locator('#active-card')).toContainText('You can roll now, or wait and draw more cards on later turns');
+  await expect(page.locator('#active-card')).toContainText('What counts right now');
+  await expect(page.locator('#active-card')).toContainText('Base 8');
+  await expect(page.locator('#active-card')).toContainText('Tech Cred +2');
+  await expect(page.locator('#active-card')).toContainText('If you fail');
+
+  await page.getByRole('button', { name: 'Draw more cards' }).click();
+  await expect(page.locator('#active-card')).toContainText('Choose your next move');
+  await expect(page.locator('#draw-scenario-btn')).toBeEnabled();
+  await expect(page.locator('#draw-support-btn')).toBeEnabled();
+  await expect(page.locator('#active-card button')).toHaveCount(0);
+
+  await page.locator('#draw-scenario-btn').click();
+  await expect(page.locator('#active-card h2')).not.toContainText('Choose your next move');
+  await expect(page.locator('#active-card .choice-buttons button')).toHaveCount(2);
+
+  await page.evaluate(() => {
+    window.__gameState.pendingReview = true;
+    window.__gameState.activeCard = null;
+    window.__gameState.cardType = null;
+    window.__gameState.actionsRemaining = 1;
+    window.render();
+  });
+  await page.getByRole('button', { name: 'Roll review' }).click();
+  await expect(page.locator('#active-card')).toContainText('review failed');
+  await expect(page.locator('#active-card')).toContainText('Total 11 vs target 15');
+  await expect(page.locator('#active-card .choice-buttons')).toContainText('Next turn');
+  await expect(page.locator('#active-card .choice-buttons')).toContainText('Draw more cards');
+
+  await page.getByRole('button', { name: 'Draw more cards' }).click();
+  await expect(page.locator('#active-card')).toContainText('Choose your next move');
+  await expect(page.locator('#draw-scenario-btn')).toBeEnabled();
+  await expect(page.locator('#draw-support-btn')).toBeEnabled();
+  await expect(page.locator('#active-card button')).toHaveCount(0);
+
+  await page.evaluate(() => {
+    window.__gameState.pendingReview = true;
+    window.render();
+  });
+  await expect(page.locator('#active-card')).toContainText('Promotion review');
+  await expect(page.locator('#active-card')).toContainText('Roll review');
 });
 
 
