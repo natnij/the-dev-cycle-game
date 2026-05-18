@@ -120,6 +120,7 @@ test('each stage has a support card that clears burnout spiral at recovery targe
     syncBurnoutSpiralStatus(state);
 
     assert.equal(state.burnout, BURNOUT_SPIRAL_RECOVERY);
+    assert.equal(state.energy, 50);
     assert.equal(state.statusEffects.includes(BURNOUT_SPIRAL_STATUS), false);
   });
 });
@@ -137,6 +138,7 @@ test('stage three burnout recovery support card drops burnout to recovery target
   syncBurnoutSpiralStatus(state);
 
   assert.equal(state.burnout, BURNOUT_SPIRAL_RECOVERY);
+  assert.equal(state.energy, 50);
   assert.equal(state.statusEffects.includes(BURNOUT_SPIRAL_STATUS), false);
 });
 
@@ -410,7 +412,7 @@ test('scenario decks include multiple recovery choices that lower burnout and ra
   const recoveryChoices = Object.values(SCENARIO_DECKS)
     .flatMap((deck) => deck)
     .flatMap((card) => [card.agree, card.decline])
-    .filter((choice) => (choice.effects?.burnout ?? 0) < 0 && (choice.effects?.energy ?? 0) > 0);
+    .filter(isRecoveryTradeoffChoice);
 
   assert.equal(recoveryChoices.length >= 4, true);
 });
@@ -419,7 +421,7 @@ test('scenario recovery choices carry balancing downsides', () => {
   const recoveryChoices = Object.values(SCENARIO_DECKS)
     .flatMap((deck) => deck)
     .flatMap((card) => [card.agree, card.decline])
-    .filter((choice) => (choice.effects?.burnout ?? 0) < 0 && (choice.effects?.energy ?? 0) > 0);
+    .filter(isRecoveryTradeoffChoice);
 
   assert.equal(recoveryChoices.every((choice) => (choice.effects?.techCred ?? 0) < 0 || (choice.effects?.support ?? 0) < 0), true);
 });
@@ -720,6 +722,16 @@ test('drawing a normal scenario does not change tracked stats before choice', ()
   assert.deepEqual(state.usedScenarioTitles, ['The Coffee Mistake']);
 });
 
+test('main stage scenario decks include at least 12 recovery tradeoff choices total', () => {
+  assert.equal(countRecoveryTradeoffChoices() >= 12, true);
+});
+
+test('each stage has at least one recovery tradeoff choice', () => {
+  STAGES.forEach((stage, index) => {
+    assert.equal(countRecoveryTradeoffChoicesForStage(index) >= 1, true, `${stage.name} should have at least one recovery tradeoff choice`);
+  });
+});
+
 test('drawing a project scenario does not change tracked stats before choice', () => {
   const state = createInitialState();
   const before = {
@@ -955,6 +967,19 @@ function isExpectedTierThreeTitle(title) {
 
 function getUniqueScenarioTitleCount() {
   return getUniquePoolSize();
+}
+
+function isRecoveryTradeoffChoice(choice) {
+  const effects = choice?.effects ?? {};
+  return (effects.energy ?? 0) > 0 && (effects.burnout ?? 0) < 0;
+}
+
+function countRecoveryTradeoffChoicesForStage(stage) {
+  return SCENARIO_DECKS[stage].flatMap((card) => [card.agree, card.decline]).filter(isRecoveryTradeoffChoice).length;
+}
+
+function countRecoveryTradeoffChoices() {
+  return Object.keys(SCENARIO_DECKS).reduce((total, stage) => total + countRecoveryTradeoffChoicesForStage(Number(stage)), 0);
 }
 
 function getScenarioTitleCount() {

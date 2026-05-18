@@ -37,7 +37,7 @@ export const SCENARIO_DECKS = {
       title: "Late-Night Networking",
       text: "The team heads to drinks at 8 PM where real decisions often get previewed. You do not feel fully safe or comfortable there.",
       agree: { label: "Go anyway", summary: "Attend the after-hours networking event to stay in the loop.", effects: { support: 10, energy: -8, burnout: 5 }, result: "You pick up useful context, but you pay for access with your evening." },
-      decline: { label: "Skip it", summary: "Protect your evening instead of paying the access tax.", effects: { support: -8, burnout: 2 }, result: "You protect your boundaries and lose some informal influence." }
+      decline: { label: "Skip it", summary: "Protect your evening instead of paying the access tax.", effects: { support: -8, burnout: -3, energy: 4 }, result: "You protect your boundaries, recover some real capacity, and lose some informal influence." }
     },
     {
       title: "The Demo That Gets Redirected",
@@ -49,7 +49,7 @@ export const SCENARIO_DECKS = {
       title: "Volunteer Note-Taker",
       text: "A manager asks if you can capture meeting notes because you are 'great at detail,' even though you are trying to land visible technical work.",
       agree: { label: "Take the notes", summary: "Accept the meeting labor so the team keeps moving.", effects: { support: 6, techCred: -4, burnout: 6 }, status: "Office Housework", result: "You help the team immediately, and the invisible labor pattern gets reinforced. Office Housework now drains 2 Energy each next turn until you clear it." },
-      decline: { label: "Protect technical time", summary: "Decline the note-taking request and stay on engineering work.", effects: { burnout: 5, support: -4, techCred: 3 }, result: "You keep your hands on engineering work and accept that someone may call it attitude." }
+      decline: { label: "Protect technical time", summary: "Decline the note-taking request and stay on engineering work.", effects: { burnout: -2, energy: 3, support: -4, techCred: 2 }, result: "You keep your hands on engineering work, get some capacity back, and accept that someone may call it attitude." }
     },
     {
       title: "Shadow Ownership",
@@ -99,7 +99,7 @@ export const SCENARIO_DECKS = {
       title: "Still Treated Like the Organized One",
       text: "Even at promotion time, your strongest technical work is described as teamwork while peers are described as deep or strategic.",
       agree: { label: "Lean into the helpful image", summary: "Accept the likable framing instead of contesting it.", effects: { support: 7, techCred: -4, burnout: 6 }, status: "Pigeonholed", result: "You stay likable in the room, but the room keeps narrowing how it sees you." },
-      decline: { label: "Reframe your impact technically", summary: "Shift the conversation back to architecture and measurable technical work.", effects: { techCred: 8, burnout: 6 }, result: "You push the conversation back toward architecture, systems thinking, and measurable outcomes." }
+      decline: { label: "Reframe your impact technically", summary: "Shift the conversation back to architecture and measurable technical work.", effects: { techCred: 6, support: -2, burnout: -2, energy: 3 }, result: "You push the conversation back toward architecture and measurable outcomes, and the clearer frame buys you some real relief." }
     },
     {
       title: "Promotion Packet Homework",
@@ -173,7 +173,7 @@ export const SCENARIO_DECKS = {
       title: "Strategy Deck, Execution Tax",
       text: "Leadership wants your strategic input on a roadmap, but you are still expected to carry the same execution load underneath it.",
       agree: { label: "Do both layers", summary: "Carry strategy and execution at the same time to prove range.", effects: { techCred: 11, burnout: 11, energy: -6 }, result: "You show staff-level range, but the combined expectation is punishing." },
-      decline: { label: "Trade execution for strategy", summary: "Push to drop some delivery work if strategic work is expected.", effects: { techCred: 7, burnout: 4, support: -2 }, result: "You protect your capacity by forcing a conversation about what you can actually carry." }
+      decline: { label: "Trade execution for strategy", summary: "Push to drop some delivery work if strategic work is expected.", effects: { techCred: 7, burnout: -3, energy: 4, support: -2 }, result: "You protect your capacity by forcing a conversation about what you can actually carry, and the reduced load gives you some room back." }
     },
     {
       title: "Attribution Cleanup",
@@ -229,19 +229,19 @@ export const SCENARIO_DECKS = {
       title: "Executive Exposure, Thin Safety Net",
       text: "You get a chance to present to senior leadership, but the opportunity comes without the prep, air cover, or sponsor your peers often seem to get.",
       agree: { label: "Take the slot anyway", summary: "Take the leadership exposure even without preparation or backing.", effects: { techCred: 10, burnout: 8, energy: -5 }, result: "You take the visibility and absorb the prep cost yourself." },
-      decline: { label: "Ask for backing first", summary: "Ask for real prep and sponsor support before accepting the slot.", effects: { support: 6, burnout: 3, techCred: 3 }, result: "You insist that visibility should come with support, not just exposure." }
+      decline: { label: "Ask for backing first", summary: "Ask for real prep and sponsor support before accepting the slot.", effects: { support: -2, techCred: 3, burnout: -3, energy: 4 }, result: "You insist that visibility should come with support, not just exposure, keep more of your actual reserves intact, and accept less immediate momentum." }
     },
     {
       title: "Leadership Persona Audit",
       text: "You are told to look more executive, sound more certain, and stay approachable all at once.",
       agree: { label: "Perform the full persona", summary: "Spend energy matching the exact executive image being asked of you.", effects: { support: 6, burnout: 8, energy: -4 }, result: "You spend real effort managing how you are perceived instead of just what you deliver." },
-      decline: { label: "Stay technically grounded", summary: "Stick to substance instead of performing the approved persona.", effects: { techCred: 7, burnout: 5, support: -2 }, result: "You center substance over performance and accept that some evaluators will read that as less polished." }
+      decline: { label: "Stay technically grounded", summary: "Stick to substance instead of performing the approved persona.", effects: { techCred: 7, burnout: -2, energy: 3, support: -2 }, result: "You center substance over performance, keep more energy for the real work, and accept that some evaluators will read that as less polished." }
     },
     {
       title: "Reorg Whisper Campaign",
       text: "A reorg is being shaped in side conversations. You can spend political energy joining the whisper network or stay out and react later from a weaker position.",
       agree: { label: "Enter the backchannel", summary: "Spend social capital in the informal process so your org is not designed around you.", effects: { support: 8, burnout: 7, energy: -4, techCred: 3 }, result: "You buy influence in the informal arena and keep yourself from being reorganized as an afterthought." },
-      decline: { label: "Stay out of it", summary: "Refuse the gossip economy and preserve your capacity for direct work.", effects: { burnout: 3, support: -5, techCred: 4 }, result: "You keep your dignity and your time, but you give up some say over the shape of the coming org chart." }
+      decline: { label: "Stay out of it", summary: "Refuse the gossip economy and preserve your capacity for direct work.", effects: { support: -5, techCred: 4, burnout: -2, energy: 3 }, result: "You keep your dignity and your time, recover some capacity, and give up some say over the shape of the coming org chart." }
     },
     {
       title: "Staff Meeting, Parent-Teacher Conflict",
@@ -273,7 +273,7 @@ export const SCENARIO_DECKS = {
       title: "Coverage Assumption",
       text: "People assume you will still be informally available during leave for context, clarifications, and rescue questions.",
       agree: { label: "Answer the pings", summary: "Stay partially available during leave so the team can keep leaning on you.", effects: { support: 5, burnout: 9, energy: -7 }, result: "You smooth the transition for everyone else and lose a chunk of your actual leave." },
-      decline: { label: "Keep the boundary", summary: "Hold the leave boundary and refuse the rescue requests.", effects: { burnout: 3, support: -4, techCred: 1 }, result: "You protect the leave and let the handover stand on its own." }
+      decline: { label: "Keep the boundary", summary: "Hold the leave boundary and refuse the rescue requests.", effects: { support: -4, techCred: 1, burnout: -3, energy: 4 }, result: "You protect the leave, let the handover stand on its own, and keep more of your recovery intact." }
     },
     {
       title: "Return to a Smaller Role",
@@ -317,7 +317,7 @@ export const SCENARIO_DECKS = {
       title: "The 24/7 Culture",
       text: "A VP pings you late at night asking for numbers by morning, assuming someone senior is always on.",
       agree: { label: "Reply now", summary: "Answer the late-night request immediately to stay politically safe.", effects: { techCred: 10, burnout: 10 }, result: "You gain immediate political credit and lose tomorrow's breathing room." },
-      decline: { label: "Reply tomorrow", summary: "Wait until morning and accept the optics cost of that boundary.", effects: { techCred: -5, burnout: 2 }, result: "You hold the line and accept the small reputational hit." }
+      decline: { label: "Reply tomorrow", summary: "Wait until morning and accept the optics cost of that boundary.", effects: { techCred: -5, burnout: -2, energy: 3 }, result: "You hold the line, recover a bit of breathing room, and accept the small reputational hit." }
     },
     {
       title: "The Guilt Card",
@@ -341,7 +341,7 @@ export const SCENARIO_DECKS = {
       title: "Second Shift Sprint",
       text: "A critical work deadline lands during an already overloaded week at home, and the only obvious path is to steal rest from yourself.",
       agree: { label: "Work after everyone sleeps", summary: "Steal rest from yourself so neither side slips right away.", effects: { techCred: 8, burnout: 14, energy: -8 }, result: "You preserve both fronts temporarily by taking the cost directly into your own body." },
-      decline: { label: "Let one deadline slip", summary: "Allow one side to be imperfect instead of buffering both with your body.", effects: { burnout: 5, techCred: -7, support: 2 }, result: "You accept an imperfection now instead of turning yourself into the buffer forever." }
+      decline: { label: "Let one deadline slip", summary: "Allow one side to be imperfect instead of buffering both with your body.", effects: { techCred: -7, support: 2, burnout: -4, energy: 5 }, result: "You accept an imperfection now instead of turning yourself into the buffer forever, and you get some actual recovery back." }
     },
     {
       title: "Community Save",
@@ -622,7 +622,7 @@ export const SUPPORT_DECKS = {
     { title: "Foundations Reset", text: "A patient reset on core systems knowledge helps you close the confidence and context gap before it calcifies into reputation.", effects: { techCred: 4, burnout: -5 }, removeStatus: "Skill Gap" },
     { title: "Scope Reframe", text: "A manager and mentor help redraw your role around harder technical work before the early assumptions about you harden.", effects: { techCred: 5, support: 4 }, removeStatus: "Pigeonholed" },
     { title: "Hand Off the Extra Labor", text: "A manager and teammate finally absorb the coordination work you had been privately carrying, so being helpful stops meaning being permanently on call for everyone else's gaps.", effects: { support: 3, burnout: -4, energy: 2 }, removeStatus: "The Glue" },
-    { title: "Real Weekend", text: "Someone takes the pressure off long enough for you to sleep, eat, and think like a person again instead of a survival machine.", effects: { burnout: BURNOUT_SPIRAL_RECOVERY - BURNOUT_SPIRAL_THRESHOLD }, removeStatus: BURNOUT_SPIRAL_STATUS }
+    { title: "Real Weekend", text: "Someone takes the pressure off long enough for you to sleep, eat, and think like a person again instead of a survival machine.", effects: { burnout: BURNOUT_SPIRAL_RECOVERY - BURNOUT_SPIRAL_THRESHOLD, energy: 10 }, removeStatus: BURNOUT_SPIRAL_STATUS }
   ],
   1: [
     { title: "Sponsor", text: "A woman with influence says your name in rooms you are not in and ties your impact to real opportunities.", effects: { support: 8, techCred: 8, burnout: -5 }, supportDrawCost: 10 },
@@ -634,7 +634,7 @@ export const SUPPORT_DECKS = {
     { title: "Promotion Study Group", text: "A structured practice loop closes the knowledge gap that the process kept turning into a verdict on your readiness.", effects: { techCred: 5, support: 4, burnout: -3 }, removeStatus: "Skill Gap" },
     { title: "Packet Repositioning", text: "A sponsor helps recast your work in unmistakably technical terms so the room stops boxing you into the helpful lane.", effects: { techCred: 5, support: 5 }, removeStatus: "Pigeonholed" },
     { title: "Scope Triage", text: "A manager helps cut the unofficial mentoring, process rescue, and translation work out of your week so your helpfulness stops being treated like an infinite resource.", effects: { support: 3, burnout: -4, energy: 2 }, removeStatus: "The Glue" },
-    { title: "Protected Week", text: "A manager and sponsor close ranks around your calendar so you can recover before burnout turns into collapse.", effects: { burnout: BURNOUT_SPIRAL_RECOVERY - BURNOUT_SPIRAL_THRESHOLD }, removeStatus: BURNOUT_SPIRAL_STATUS }
+    { title: "Protected Week", text: "A manager and sponsor close ranks around your calendar so you can recover before burnout turns into collapse.", effects: { burnout: BURNOUT_SPIRAL_RECOVERY - BURNOUT_SPIRAL_THRESHOLD, energy: 10 }, removeStatus: BURNOUT_SPIRAL_STATUS }
   ],
   2: [
     { title: "Attribution Echo", text: "A cross-functional partner repeats your architectural call and names you as the source before the room can blur it into group effort.", effects: { techCred: 7, support: 6, burnout: -3 } },
@@ -646,7 +646,7 @@ export const SUPPORT_DECKS = {
     { title: "Systems Refresh", text: "A trusted peer helps you rebuild the missing context around the systems you were judged on before you were fully set up.", effects: { techCred: 5, burnout: -4, support: 3 }, removeStatus: "Skill Gap" },
     { title: "Architecture Sponsorship", text: "A senior ally deliberately repositions you around systems ownership so the room stops treating you as optional glue.", effects: { techCred: 6, support: 4 }, removeStatus: "Pigeonholed" },
     { title: "Delegation Reset", text: "A peer and manager help redistribute the invisible review, translation, and rescue work so your reliability stops depending on private overfunctioning.", effects: { support: 3, burnout: -4, energy: 2 }, removeStatus: "The Glue" },
-    { title: "Load Shedding", text: "You cut optional commitments and get real backing for it before the exhaustion hardens into a permanent mode.", effects: { burnout: BURNOUT_SPIRAL_RECOVERY - BURNOUT_SPIRAL_THRESHOLD }, removeStatus: BURNOUT_SPIRAL_STATUS }
+    { title: "Load Shedding", text: "You cut optional commitments and get real backing for it before the exhaustion hardens into a permanent mode.", effects: { burnout: BURNOUT_SPIRAL_RECOVERY - BURNOUT_SPIRAL_THRESHOLD, energy: 10 }, removeStatus: BURNOUT_SPIRAL_STATUS }
   ],
   3: [
     { title: "Executive Sponsor", text: "A woman leader gives your technical judgment air cover before a high-visibility decision can turn into a personality test.", effects: { techCred: 8, support: 8, burnout: -4 }, supportDrawCost: 10 },
@@ -658,7 +658,7 @@ export const SUPPORT_DECKS = {
     { title: "Technical Reset Block", text: "You get protected time and direct support to rebuild confidence in the parts of the role that got treated like evidence you did not belong.", effects: { techCred: 4, burnout: -5, energy: 2 }, removeStatus: "Skill Gap" },
     { title: "Lane Expansion", text: "An executive ally reintroduces you through your technical strategy rather than your people labor, reopening the lane that had narrowed around you.", effects: { techCred: 5, support: 5 }, removeStatus: "Pigeonholed" },
     { title: "Role Load Audit", text: "A leader helps separate actual leadership from the emotional and coordination overflow that had silently attached itself to you as part of the job.", effects: { support: 3, burnout: -4, energy: 2 }, removeStatus: "The Glue" },
-    { title: "Calendar Firewall", text: "Someone with authority protects your focus and strips the week back to what actually matters.", effects: { burnout: BURNOUT_SPIRAL_RECOVERY - BURNOUT_SPIRAL_THRESHOLD }, removeStatus: BURNOUT_SPIRAL_STATUS }
+    { title: "Calendar Firewall", text: "Someone with authority protects your focus and strips the week back to what actually matters.", effects: { burnout: BURNOUT_SPIRAL_RECOVERY - BURNOUT_SPIRAL_THRESHOLD, energy: 10 }, removeStatus: BURNOUT_SPIRAL_STATUS }
   ],
   4: [
     { title: "Leave Planner", text: "Another mother in tech shares the handover checklist she wishes she had before leave, and the future suddenly feels less improvised.", effects: { support: 8, burnout: -5, energy: 2 } },
@@ -670,7 +670,7 @@ export const SUPPORT_DECKS = {
     { title: "Reentry Study Window", text: "You get explicit protected time to relearn the stack and re-enter without having every gap treated like permanent proof.", effects: { techCred: 4, energy: 3, burnout: -4 }, removeStatus: "Skill Gap" },
     { title: "Scope Restoration", text: "A sponsor helps restore your role framing so re-entry does not lock you into the smaller lane people assumed for you.", effects: { techCred: 5, support: 5 }, removeStatus: "Pigeonholed" },
     { title: "Shared Reentry Plan", text: "Your manager and family align on a narrower, explicit re-entry scope so you stop being the default hidden coordinator for everybody else's comfort.", effects: { support: 3, burnout: -4, energy: 2 }, removeStatus: "The Glue" },
-    { title: "Actual Recovery Block", text: "You finally get time that is truly off-limits to work, logistics, and proving you are still committed.", effects: { burnout: BURNOUT_SPIRAL_RECOVERY - BURNOUT_SPIRAL_THRESHOLD }, removeStatus: BURNOUT_SPIRAL_STATUS }
+    { title: "Actual Recovery Block", text: "You finally get time that is truly off-limits to work, logistics, and proving you are still committed.", effects: { burnout: BURNOUT_SPIRAL_RECOVERY - BURNOUT_SPIRAL_THRESHOLD, energy: 10 }, removeStatus: BURNOUT_SPIRAL_STATUS }
   ],
   5: [
     { title: "Emergency Childcare", text: "A community parent network absorbs the sudden collision so you do not have to be the only backstop again.", effects: { support: 8, burnout: -7, homeFront: 5 } },
@@ -682,7 +682,7 @@ export const SUPPORT_DECKS = {
     { title: "Confidence Rebuild Window", text: "Protected time and practical backup let you rebuild technical confidence instead of carrying every gap as more proof you are slipping.", effects: { techCred: 4, burnout: -4, energy: 2 }, removeStatus: "Skill Gap" },
     { title: "Role Reset Conversation", text: "A direct reset at work reopens the lane around your technical identity so care labor stops defining your whole role.", effects: { techCred: 5, support: 4, workFront: 4 }, removeStatus: "Pigeonholed" },
     { title: "Redistributed Care Load", text: "People at work and home finally take real ownership of the planning and coordination burden you had been carrying, so being the reliable one stops meaning doing everything.", effects: { support: 3, burnout: -4, energy: 2, homeFront: 3 }, removeStatus: "The Glue" },
-    { title: "Weekend With No Backfill", text: "Other people truly cover both fronts for a moment, and your body finally comes out of emergency mode.", effects: { burnout: BURNOUT_SPIRAL_RECOVERY - BURNOUT_SPIRAL_THRESHOLD }, removeStatus: BURNOUT_SPIRAL_STATUS }
+    { title: "Weekend With No Backfill", text: "Other people truly cover both fronts for a moment, and your body finally comes out of emergency mode.", effects: { burnout: BURNOUT_SPIRAL_RECOVERY - BURNOUT_SPIRAL_THRESHOLD, energy: 10 }, removeStatus: BURNOUT_SPIRAL_STATUS }
   ]
 };
 
